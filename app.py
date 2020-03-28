@@ -14,6 +14,7 @@ load_dotenv(dotenv_path=Path('.env'))
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
+    main.setup()
     while True:
         try:
             main.loop()
