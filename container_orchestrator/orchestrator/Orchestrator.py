@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
+import time
 from container_orchestrator.container.Docker import Docker as Container
+from container_orchestrator.config import *
 
 
 class Orchestrator:
@@ -12,18 +14,33 @@ class Orchestrator:
         print("finding container")
         for container in self.getAvailableContainers():
             if container.getResourceName() == resource:
-                print("available container found")
+                if DEBUG:
+                    print("available container found")
                 return container
         return self.createContainer(resource, timeout)
 
     def createContainer(self, resource, timeout=10):
-        print("creating container")
+        if DEBUG:
+            print("creating container")
         if self.getAvailablePort() is None:
             return None
-        container = Container(resource, self.getAvailablePort())
+        port = self.getAvailablePort()
+        if port is None:
+            return None
+        if DEBUG:
+            print("creating container at,", port)
+        container = Container(resource, port)
         container.start()
-        if not container.isRunning():
-            print("no response")
+        running = False
+        while timeout > 0:
+            if container.isRunning():
+                running = True
+                break
+            time.sleep(1)
+            timeout -= 1
+        if not running:
+            if DEBUG:
+                print("no response")
             try:
                 container.remove()
             except Exception as e:
@@ -31,7 +48,8 @@ class Orchestrator:
             return None
         # TODO: critical section!
         self.__containers.append(container)
-        print("newly created container")
+        if DEBUG:
+            print("newly created container")
         return container
 
     def getAvailablePort(self):

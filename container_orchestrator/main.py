@@ -1,8 +1,7 @@
 import signal, sys, time
-from dotenv import load_dotenv
-from pathlib import Path
 from container_orchestrator.tcp.TcpServer import TcpServer
 from container_orchestrator.orchestrator.Orchestrator import Orchestrator
+from container_orchestrator.config import *
 
 def signal_handler(sig, frame):
     orchestrator.exit()
@@ -12,14 +11,15 @@ def signal_handler(sig, frame):
 def setup():
     global orchestrator
     global server
-    load_dotenv(dotenv_path=Path('.env'))
     signal.signal(signal.SIGINT, signal_handler)
-    print("init!")
+    if DEBUG:
+        print("init!")
     orchestrator = Orchestrator(base_port=7000, top_port=7100)
     server = TcpServer(7655)
 
 def loop():
     global orchestrator
     global server
-    print("loop!")
+    if DEBUG:
+        print("loop!")
     server.handle_next_connection(orchestrator)

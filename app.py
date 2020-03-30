@@ -4,6 +4,7 @@
 import time
 from container_orchestrator import main
 from container_orchestrator.orchestrator.Orchestrator import Orchestrator
+from container_orchestrator.config import *
 
 
 if __name__ == '__main__':

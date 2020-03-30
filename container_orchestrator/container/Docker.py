@@ -1,6 +1,8 @@
 import docker, time
 from datetime import datetime
 from container_orchestrator.tcp.TcpClient import TcpClient
+from container_orchestrator.config import *
+
 
 def translateResourceName(resource):
     if resource == 'matrix':
@@ -65,43 +67,36 @@ class Docker:
         return self.__container.top()
 
     def isAvailable(self):
-        if not self.isOperable():
-            return False
         return self.isRunning() and self.isIdle()
 
-    def isRunning(self, timeout=10):
+    def isRunning(self):
         if not self.__is_operable:
             return False
-        if not self.isIdle():
-            return True
         try:
-            client = TcpClient("0.0.0.0", self.__port, timeout)
+            result = self.__container.exec_run("cat /idle")
         except Exception as e:
             print(e)
             return False
-        try:
-            client.send_message(B'+<up?>')
-        except Exception as e:
-            client.exit()
-            print(e)
-            return False
-        response = client.listen()
-        client.exit()
-        if response == b'+<yes>':
-            print("successful running response:", response)
+        if DEBUG:
+            print("running cat:", result)
+        if result[0] == 0:
             return True
-        print("failure running response:", response)
         return False
 
     def isIdle(self):
-        return True
         if not self.isOperable():
             return False
+        if not self.isRunning():
+            return False
         result = self.__container.exec_run("cat /idle")
+        if DEBUG:
+            print("idling cat:", result)
         if result[0] != 0:
             self.__is_operable = False
             return False
-        return result[1] == b'0'
+        if DEBUG:
+            print("cat /idle->", result[1])
+        return result[1] == b'1'
 
     def isOperable(self):
         return self.__is_operable
