@@ -7,8 +7,6 @@ class Orchestrator:
         self.__containers = []
         self.__base_port = base_port
         self.__top_port = top_port
-        self.__resource_queue = []
-        self.__max_queue = max_queue
 
     def requestAvailableContainer(self, resource, timeout=10):
         print("finding container")

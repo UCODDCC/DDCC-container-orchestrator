@@ -19,3 +19,6 @@ class TcpClient():
     def listen(self):
         response = self.__client.recv(2048)
         return response
+
+    def exit(self):
+        self.__client.close()

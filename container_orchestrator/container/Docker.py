@@ -4,7 +4,7 @@ from container_orchestrator.tcp.TcpClient import TcpClient
 
 def translateResourceName(resource):
     if resource == 'matrix':
-        return "ucoddcdmatrix"
+        return "ucoddccmatrix"
 
     raise Exception("translation could not be found")
 
@@ -21,7 +21,7 @@ class Docker:
             detach=True,
             ports={self.__port: str(self.__port)},
             environment={
-                'PORT': self.__port,
+                'PORT': str(self.__port),
                 'RESOURCE': self.__resource,
                 'HOSTNAME': str(self.__resource) + ":" + str(self.__port),
             },
@@ -76,12 +76,17 @@ class Docker:
             return True
         try:
             client = TcpClient("0.0.0.0", self.__port, timeout)
-            client.send_message(B'+<up?>')
         except Exception as e:
             print(e)
-            time.sleep(timeout)
+            return False
+        try:
+            client.send_message(B'+<up?>')
+        except Exception as e:
+            client.exit()
+            print(e)
             return False
         response = client.listen()
+        client.exit()
         if response == b'+<yes>':
             print("successful running response:", response)
             return True
@@ -96,7 +101,7 @@ class Docker:
         if result[0] != 0:
             self.__is_operable = False
             return False
-        return result[1] == b"0"
+        return result[1] == b'0'
 
     def isOperable(self):
         return self.__is_operable

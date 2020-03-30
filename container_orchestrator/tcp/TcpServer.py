@@ -37,3 +37,6 @@ class TcpServer:
             args=(client_sock,orchestrator,)
         )
         client_handler.start()
+
+    def exit(self):
+        self.__server.close()
