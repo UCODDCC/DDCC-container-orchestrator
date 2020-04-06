@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
-import time, threading
+import time, threading, os
 from container_orchestrator.container.Docker import Docker as Container
-from container_orchestrator.config import *
+
 
 
 class Orchestrator:
@@ -16,7 +16,7 @@ class Orchestrator:
         self.__lock.acquire(True)
         for container in self.getAvailableContainers():
             if container.getResourceName() == resource:
-                if DEBUG:
+                if str(os.getenv('DEBUG')) == "True":
                     print("available container found")
                 self.__lock.release()
                 return container # TODO container can collide with other job while waiting for regional master to send work
@@ -27,7 +27,7 @@ class Orchestrator:
 
 
     def createContainer(self, resource, timeout=10):
-        if DEBUG:
+        if str(os.getenv('DEBUG')) == "True":
             print("creating container")
         self.__lock.acquire(True)
         if self.getAvailablePort() is None:
@@ -37,7 +37,7 @@ class Orchestrator:
         if port is None:
             self.__lock.release()
             return None
-        if DEBUG:
+        if str(os.getenv('DEBUG')) == "True":
             print("creating container at,", port)
         container = Container(resource, port)
         container.start()
@@ -49,7 +49,7 @@ class Orchestrator:
             time.sleep(1)
             timeout -= 1
         if not running:
-            if DEBUG:
+            if str(os.getenv('DEBUG')) == "True":
                 print("no response from container")
             try:
                 container.remove()
@@ -62,7 +62,7 @@ class Orchestrator:
         # TODO container can collide with other job while waiting for regional master to send work
         # TODO solution is to implement a x second timer in getavailresources with setnewop timer actualizer
 
-        if DEBUG:
+        if str(os.getenv('DEBUG')) == "True":
             print("newly created container")
         return container
 

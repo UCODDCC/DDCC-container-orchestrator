@@ -1,5 +1,4 @@
 from datetime import datetime
-from container_orchestrator.config import *
 
 class ContainerInterface:
     def __init__(self, resource, port):
