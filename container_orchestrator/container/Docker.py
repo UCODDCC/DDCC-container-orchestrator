@@ -1,5 +1,5 @@
 import docker, time, os
-from datetime import datetime
+from datetime import datetime, timedelta
 from container_orchestrator.tcp.TcpClient import TcpClient
 
 
@@ -95,7 +95,10 @@ class Docker:
             return False
         if str(os.getenv('DEBUG')) == "True":
             print("cat /idle->", result[1])
-        return result[1] == b'1'
+        if result[1] == b'1':
+            ttl = timedelta(seconds=int(os.getenv('MINIMUM_IDLETIME_TO_BE_AVAILABLE')))
+            return ttl < self.getIdleTime()
+        return False
 
     def isOperable(self):
         return self.__is_operable
