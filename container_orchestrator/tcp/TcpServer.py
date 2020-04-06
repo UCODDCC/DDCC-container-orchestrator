@@ -16,14 +16,7 @@ def handle_client_connection(client_socket, orchestraror):
     if container is None:
         client_socket.send("-server overload<no resource is available>".encode(encoding='utf-8', errors='strict'))
         return
-    client = TcpClient(ip='127.0.0.1', port=container.getPort())
-    if DEBUG:
-        print('to docker {}'.format(request))
-    client.send_message(request)
-    response = client.listen()
-    if DEBUG:
-        print('from docker {}'.format(response))
-    client_socket.send(response)
+    client_socket.send(("+<" + str(container.getPort()) + ">").encode(encoding='utf-8', errors='strict'))
     client_socket.close()
 
 
