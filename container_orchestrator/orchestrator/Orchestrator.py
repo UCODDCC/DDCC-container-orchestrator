@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-import time
+import time, threading
 from container_orchestrator.container.Docker import Docker as Container
 from container_orchestrator.config import *
 
@@ -9,23 +9,33 @@ class Orchestrator:
         self.__containers = []
         self.__base_port = base_port
         self.__top_port = top_port
+        self.__lock = threading.Lock()
 
     def requestAvailableContainer(self, resource, timeout=10):
         print("finding container")
+        self.__lock.acquire(True)
         for container in self.getAvailableContainers():
             if container.getResourceName() == resource:
                 if DEBUG:
                     print("available container found")
-                return container
-        return self.createContainer(resource, timeout)
+                self.__lock.release()
+                return container # TODO container can collide with other job while waiting for regional master to send work
+                # TODO solution is to implement a x second timer in getavailresources with setnewop timer actualizer
+        self.__lock.release()
+        container = self.createContainer(resource, timeout)
+        return container
+
 
     def createContainer(self, resource, timeout=10):
         if DEBUG:
             print("creating container")
+        self.__lock.acquire(True)
         if self.getAvailablePort() is None:
+            self.__lock.release()
             return None
         port = self.getAvailablePort()
         if port is None:
+            self.__lock.release()
             return None
         if DEBUG:
             print("creating container at,", port)
@@ -40,14 +50,18 @@ class Orchestrator:
             timeout -= 1
         if not running:
             if DEBUG:
-                print("no response")
+                print("no response from container")
             try:
                 container.remove()
             except Exception as e:
                 print(e)
+            self.__lock.release()
             return None
-        # TODO: critical section!
         self.__containers.append(container)
+        self.__lock.release()
+        # TODO container can collide with other job while waiting for regional master to send work
+        # TODO solution is to implement a x second timer in getavailresources with setnewop timer actualizer
+
         if DEBUG:
             print("newly created container")
         return container

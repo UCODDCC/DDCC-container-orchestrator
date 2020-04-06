@@ -10,8 +10,5 @@ from container_orchestrator.config import *
 if __name__ == '__main__':
     main.setup()
     while True:
-        #try:
         main.loop()
-        #except Exception as e:
-        #    print(e)
         time.sleep(1)
