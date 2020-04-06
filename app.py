@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
+from dotenv import load_dotenv
+from pathlib import Path
 import time
-from container_orchestrator import main
-from container_orchestrator.orchestrator.Orchestrator import Orchestrator
-from container_orchestrator.config import *
 
+load_dotenv(dotenv_path=Path('.env'))
+
+from container_orchestrator import main
 
 if __name__ == '__main__':
     main.setup()

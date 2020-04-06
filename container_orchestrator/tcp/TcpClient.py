@@ -1,6 +1,4 @@
-import socket
-import select
-from container_orchestrator.config import *
+import socket, select, os
 
 
 class TcpClient():
@@ -11,7 +9,7 @@ class TcpClient():
 
     def handle_client_connection(self, client_socket):
         request = client_socket.recv(1024)
-        if DEBUG:
+        if str(os.getenv('DEBUG')) == "True":
             print ('Received {}'.format(request))
         client_socket.send("+<response here>")
         client_socket.close()

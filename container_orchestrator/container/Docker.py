@@ -1,7 +1,6 @@
-import docker, time
+import docker, time, os
 from datetime import datetime
 from container_orchestrator.tcp.TcpClient import TcpClient
-from container_orchestrator.config import *
 
 
 def translateResourceName(resource):
@@ -77,7 +76,7 @@ class Docker:
         except Exception as e:
             print(e)
             return False
-        if DEBUG:
+        if str(os.getenv('DEBUG')) == "True":
             print("running cat:", result)
         if result[0] == 0:
             return True
@@ -89,12 +88,12 @@ class Docker:
         if not self.isRunning():
             return False
         result = self.__container.exec_run("cat /idle")
-        if DEBUG:
+        if str(os.getenv('DEBUG')) == "True":
             print("idling cat:", result)
         if result[0] != 0:
             self.__is_operable = False
             return False
-        if DEBUG:
+        if str(os.getenv('DEBUG')) == "True":
             print("cat /idle->", result[1])
         return result[1] == b'1'
 
