@@ -37,6 +37,9 @@ class ContainerInterface:
     def isOperable(self):
         return self.__is_operable
 
+    def markAsToRemove(self):
+        self.__is_operable = False
+
     def updateAssignationTime(self):
         self.__last_assignation = datetime.now()
 

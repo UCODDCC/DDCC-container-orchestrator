@@ -49,7 +49,7 @@ class Docker:
         return True
 
     def remove(self):
-        if not self.isAvailable():
+        if self.isAvailable():
             return False
         self.__is_operable = False
         self.__container.reload()
@@ -68,10 +68,10 @@ class Docker:
         return self.__container.top()
 
     def isAvailable(self):
-        return self.isRunning() and self.isIdle()
+        return self.isIdle()
 
     def isRunning(self):
-        if not self.__is_operable:
+        if not self.isOperable():
             return False
         try:
             result = self.__container.exec_run("cat /idle")
@@ -98,12 +98,15 @@ class Docker:
         if str(os.getenv('DEBUG')) == "True":
             print("cat /idle->", result[1])
         if result[1] == b'1':
-            ttl = timedelta(seconds=int(os.getenv('MINIMUM_IDLETIME_TO_BE_AVAILABLE')))
+            ttl = timedelta(seconds=int(os.getenv('MINIMUM_IDLE_TIME_TO_BE_AVAILABLE')))
             return ttl < self.getIdleTime()
         return False
 
     def isOperable(self):
         return self.__is_operable
+
+    def markAsToRemove(self):
+        self.__is_operable = False
 
     def updateAssignationTime(self):
         self.__last_assignation = datetime.now()
