@@ -6,6 +6,8 @@ from container_orchestrator.tcp.TcpClient import TcpClient
 def translateResourceName(resource):
     if resource == 'matrix':
         return "ucoddccmatrix"
+    elif resource == 'vector':
+        return "ucoddccvector"
 
     raise Exception("translation could not be found")
 

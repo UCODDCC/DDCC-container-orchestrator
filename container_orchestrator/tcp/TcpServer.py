@@ -5,9 +5,9 @@ from container_orchestrator.orchestrator.Orchestrator import Orchestrator
 
 def handle_client_connection(client_socket, orchestraror):
     request = client_socket.recv(2048)
-    opcode="matrix"
     if str(os.getenv('DEBUG')) == "True":
         print('Received {}'.format(request))
+    opcode = request.decode('utf-8').split('<')[1].split('>')[0]
     container = orchestraror.requestAvailableContainer(resource=opcode)
     if container is None:
         container = orchestraror.createContainer(resource=opcode)
@@ -16,8 +16,6 @@ def handle_client_connection(client_socket, orchestraror):
         return
     client_socket.send(("+<" + str(os.getenv('DOMAIN')) + ":" + str(container.getPort()) + ">").encode(encoding='utf-8', errors='strict'))
     client_socket.close()
-
-
 
 class TcpServer:
     def __init__(self, port):

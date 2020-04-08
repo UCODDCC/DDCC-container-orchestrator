@@ -18,7 +18,7 @@ class Orchestrator:
             if container.getResourceName() == resource:
                 if str(os.getenv('DEBUG')) == "True":
                     print("available container found")
-                    container.updateAssignationTime()
+                container.updateAssignationTime()
                 self.__lock.release()
                 return container # TODO container can collide with other job while waiting for regional master to send work
                 # TODO solution is to implement a x second timer in getavailresources with setnewop timer actualizer
@@ -28,7 +28,7 @@ class Orchestrator:
 
     def createContainer(self, resource, timeout=10):
         if str(os.getenv('DEBUG')) == "True":
-            print("creating container")
+            print("creating {} container".format(resource))
         self.__lock.acquire(True)
         if self.getAvailablePort() is None:
             self.__lock.release()
