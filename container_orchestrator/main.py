@@ -1,4 +1,4 @@
-import signal, sys, time, os
+import signal, sys, time, os, threading
 from container_orchestrator.tcp.TcpServer import TcpServer
 from container_orchestrator.orchestrator.Orchestrator import Orchestrator
 
@@ -6,6 +6,12 @@ def signal_handler(sig, frame):
     orchestrator.exit()
     time.sleep(3)
     sys.exit(0)
+
+def garbageCollector():
+    global orchestrator
+    while True:
+        time.sleep(5)
+        orchestrator.garbageCollector()
 
 def setup():
     global orchestrator
@@ -15,6 +21,8 @@ def setup():
         print("init!")
     orchestrator = Orchestrator(base_port=int(os.getenv('BASE_PORT')), top_port=int(os.getenv('TOP_PORT')))
     server = TcpServer(int(os.getenv('PORT')))
+    garbage_collector_thread = threading.Thread(target=garbageCollector)
+    garbage_collector_thread.start()
 
 def loop():
     global orchestrator
