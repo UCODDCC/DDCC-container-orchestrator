@@ -1,6 +1,5 @@
-import docker, time, os
+import docker, os, sys
 from datetime import datetime, timedelta
-from container_orchestrator.tcp.TcpClient import TcpClient
 
 
 def translateResourceName(resource):
@@ -76,10 +75,10 @@ class Docker:
         try:
             result = self.__container.exec_run("cat /idle")
         except Exception as e:
-            print(e)
+            sys.stderr.write(str(e)+"\n")
             return False
-        if str(os.getenv('DEBUG')) == "True":
-            print("running cat:", result)
+        #if str(os.getenv('DEBUG')) == "True":
+        #    sys.stderr.write("running cat: {}\n".format(result))
         if result[0] == 0:
             return True
         return False
@@ -90,13 +89,13 @@ class Docker:
         if not self.isRunning():
             return False
         result = self.__container.exec_run("cat /idle")
-        if str(os.getenv('DEBUG')) == "True":
-            print("idling cat:", result)
+        #if str(os.getenv('DEBUG')) == "True":
+        #    sys.stderr.write("idling cat: {}\n".format(result))
         if result[0] != 0:
             self.__is_operable = False
             return False
-        if str(os.getenv('DEBUG')) == "True":
-            print("cat /idle->", result[1])
+        #if str(os.getenv('DEBUG')) == "True":
+        #    sys.stderr.write("cat /idle-> {}\n".format(result[1]))
         if result[1] == b'1':
             ttl = timedelta(seconds=int(os.getenv('MINIMUM_IDLE_TIME_TO_BE_AVAILABLE')))
             return ttl < self.getIdleTime()
