@@ -7,3 +7,5 @@ services:
       - 0.0.0.0:7655:7655/tcp
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - .env
