@@ -18,7 +18,7 @@ def setup():
     global server
     signal.signal(signal.SIGINT, signal_handler)
     if str(os.getenv('DEBUG')) == "True":
-        print("init!")
+        sys.stderr.write("init!\n")
     orchestrator = Orchestrator(base_port=int(os.getenv('BASE_PORT')), top_port=int(os.getenv('TOP_PORT')))
     server = TcpServer(int(os.getenv('PORT')))
     garbage_collector_thread = threading.Thread(target=garbageCollector)
@@ -27,6 +27,6 @@ def setup():
 def loop():
     global orchestrator
     global server
-    if str(os.getenv('DEBUG')) == "True":
-        print("loop!")
+    #if str(os.getenv('DEBUG')) == "True":
+    #    sys.stderr.write("loop!\n")
     server.handle_next_connection(orchestrator)

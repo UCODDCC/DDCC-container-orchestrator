@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
-import time, threading, os
+from datetime import timedelta
+import time, threading, os, sys
 from container_orchestrator.container.Docker import Docker as Container
 
 
@@ -13,30 +13,33 @@ class Orchestrator:
 
 
     def garbageCollector(self):
-        if str(os.getenv('DEBUG')) == "True":
-            print("garbage collector loop")
+        #if str(os.getenv('DEBUG')) == "True":
+        #    sys.stderr.write("garbage collector loop\n")
         for container in self.__containers:
             if container.getIdleTime() > timedelta(seconds=int(os.getenv('MAX_IDLE_TIME_ALIVE'))):
                 if container.isOperable():
                     if str(os.getenv('DEBUG')) == "True":
-                        print("garbage collector: marking container", container.getResourceName(), "in port",
-                          container.getPort(),"to be deleted")
+                        sys.stderr.write("garbage collector: marking container {} at port {} to be deleted\n".format(container.getResourceName(), container.getPort()))
                     container.markAsToRemove()
                     container.updateAssignationTime()
+                    if str(os.getenv('DEBUG')) == "True":
+                        sys.stderr.write("garbage collector: removing container {} at port {}\n".format(container.getResourceName(),container.getPort()))
+                        sys.stderr.write("remove ret: {}\n".format(container.remove()))
+                    self.__containers.remove(container)
                 else:
                     if container.getIdleTime() > timedelta(seconds=int(os.getenv('TIME_FROM_MARK_AS_DELETE_TO_REMOVE'))):
                         if str(os.getenv('DEBUG')) == "True":
-                            print("garbage collector: removing container",container.getResourceName(),"in port", container.getPort())
-                            print("remove ret:",container.remove())
+                            sys.stderr.write("garbage collector: removing container {} at port {}\n".format(container.getResourceName(), container.getPort()))
+                            sys.stderr.write("remove ret: {}\n".format(container.remove()))
                         self.__containers.remove(container)
 
     def requestAvailableContainer(self, resource, timeout=10):
-        print("finding container")
+        sys.stderr.write("finding container\n")
         self.__lock.acquire(True)
         for container in self.getAvailableContainers():
             if container.getResourceName() == resource:
                 if str(os.getenv('DEBUG')) == "True":
-                    print("available container found")
+                    sys.stderr.write("available container found\n")
                 container.updateAssignationTime()
                 self.__lock.release()
                 return container
@@ -46,7 +49,7 @@ class Orchestrator:
 
     def createContainer(self, resource, timeout=10):
         if str(os.getenv('DEBUG')) == "True":
-            print("creating {} container".format(resource))
+            sys.stderr.write("creating {} container\n".format(resource))
         self.__lock.acquire(True)
         if self.getAvailablePort() is None:
             self.__lock.release()
@@ -56,7 +59,7 @@ class Orchestrator:
             self.__lock.release()
             return None
         if str(os.getenv('DEBUG')) == "True":
-            print("creating container at,", port)
+            sys.stderr.write("creating container at, {}\n".format(port))
         container = Container(resource, port)
         container.start()
         running = False
@@ -68,7 +71,7 @@ class Orchestrator:
             timeout -= 1
         if not running:
             if str(os.getenv('DEBUG')) == "True":
-                print("no response from container")
+                sys.stderr.write("no response from container\n")
             try:
                 container.remove()
             except Exception as e:
@@ -82,7 +85,7 @@ class Orchestrator:
         # TODO solution is to implement a x second timer in getavailresources with setnewop timer actualizer
 
         if str(os.getenv('DEBUG')) == "True":
-            print("newly created container")
+            sys.stderr.write("newly created container\n")
         return container
 
     def getAvailablePort(self):
